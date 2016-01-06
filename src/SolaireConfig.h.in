@@ -1,0 +1,4 @@
+// The configured options and settings for Solaire
+
+#define Solaire_VERSION_MAJOR @Solaire_VERSION_MAJOR@
+#define Solaire_VERSION_MINOR @Solaire_VERSION_MINOR@
