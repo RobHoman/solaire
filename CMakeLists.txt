@@ -12,13 +12,16 @@ set(DEPS_PATH deps)
 include_directories("${PROJECT_BINARY_DIR}")
 
 # aggregate header file dependencies and source header files before adding the executable
-list(APPEND DEPS_HEADERS ${DEPS_PATH}/easyloggingpp/easylogging++.h)
+list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h)
+
+# aggregate dependencies sources to add to the executable
+list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c)
 
 # Aggregate Solaire sources
 add_subdirectory(src)
 
 # add the executable
-add_executable(Solaire ${SOLAIRE_SOURCES} ${DEPS_HEADERS})
+add_executable(Solaire ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLAIRE_SOURCES})
 
 ################
 ### Add deps ###
@@ -29,14 +32,18 @@ pkg_search_module(GLFW REQUIRED glfw3)
 include_directories(${GLFW_INCLUDE_DIRS})
 target_link_libraries(Solaire ${GLFW_STATIC_LIBRARIES})
 
-# GLM
+# glm
 find_package(glm REQUIRED)
 include_directories(${GLM_INCLUDE_DIRS})
+
+# glad
+include_directories(${DEPS_PATH}/glad/include)
 
 # easyloggingpp
 include_directories(${DEPS_PATH}/easyloggingpp)
 
-#GLAD
+# rapidjson
+include_directories(${DEPS_PATH}/rapidjson)
 
 # install the exe in bin
 install(TARGETS Solaire DESTINATION bin)
