@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "./graphics_app.h"
+#include "./app.h"
 #include "SolaireConfig.h"
 #include "./easylogging++.h"
 
@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     LOG(INFO) << argv[i];
   }
 
-  gp_app = new GraphicsApp();
+  gp_app = new App();
   if (!gp_app->InitInstance()) {
     LOG(FATAL) << "Failed to initalize app.";
     return -1;

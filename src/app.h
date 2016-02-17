@@ -1,6 +1,6 @@
 // Copyright 2016 Phil Homan
-#ifndef SRC_GRAPHICS_APP_H_
-#define SRC_GRAPHICS_APP_H_
+#ifndef SRC_APP_H_
+#define SRC_APP_H_
 
 #include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
@@ -8,10 +8,10 @@
 #include "./app_logic.h"
 #include "./app_initialization.h"
 
-class GraphicsApp {
+class App {
  public:
-  GraphicsApp();
-  ~GraphicsApp();
+  App();
+  ~App();
 
   bool InitInstance();
   void Run();
@@ -34,6 +34,6 @@ class GraphicsApp {
   int exit_code_;
 };
 
-extern GraphicsApp* gp_app;
+extern App* gp_app;
 
-#endif  // SRC_GRAPHICS_APP_H_
+#endif  // SRC_APP_H_

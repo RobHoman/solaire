@@ -3,11 +3,11 @@
 #include <glad/glad.h>
 #include <easylogging++.h>
 
-#include "./graphics_app.h"
+#include "./app.h"
 
-GraphicsApp* gp_app = nullptr;
+App* gp_app = nullptr;
 
-GraphicsApp::GraphicsApp() {
+App::App() {
   gp_app = this;
   p_window_ = nullptr;
   p_app_logic_ = new AppLogic();
@@ -20,10 +20,10 @@ GraphicsApp::GraphicsApp() {
 }
 
 static void glfw_error_callback(int error, const char* description) {
-  LOG(ERROR) << "%func {" << error << "} " << description;
+  LOG(ERROR) << "GLFW Error {" << error << "} " << description;
 }
 
-bool GraphicsApp::InitInstance() {
+bool App::InitInstance() {
   options_.Init("AppOptions.json");
   window_size_ = options_.window_size_;
 
@@ -59,7 +59,7 @@ bool GraphicsApp::InitInstance() {
   return true;
 }
 
-void GraphicsApp::Run() {
+void App::Run() {
   // Loop until the user quits or closes the window
   while (!glfwWindowShouldClose(p_window_)) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
