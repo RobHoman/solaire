@@ -27,23 +27,21 @@ add_executable(Solaire ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLA
 ### Add deps ###
 ################
 # GLFW
-find_package(PkgConfig REQUIRED)
-pkg_search_module(GLFW REQUIRED glfw3)
-include_directories(${GLFW_INCLUDE_DIRS})
+add_subdirectory(${DEPS_PATH}/glfw)
+include_directories(Solaire PRIVATE ${DEPS_PATH}/glfw/include)
 target_link_libraries(Solaire ${GLFW_STATIC_LIBRARIES})
 
 # glm
-find_package(glm REQUIRED)
-include_directories(${GLM_INCLUDE_DIRS})
+target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 
 # glad
-include_directories(${DEPS_PATH}/glad/include)
+target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glad/include)
 
 # easyloggingpp
-include_directories(${DEPS_PATH}/easyloggingpp)
+target_include_directories(Solaire PRIVATE ${DEPS_PATH}/easyloggingpp)
 
 # rapidjson
-include_directories(${DEPS_PATH}/rapidjson)
+target_include_directories(Solaire PRIVATE ${DEPS_PATH}/rapidjson/include)
 
 # install the exe in bin
 install(TARGETS Solaire DESTINATION bin)
