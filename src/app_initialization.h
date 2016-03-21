@@ -10,6 +10,7 @@ class AppOptions {
   AppOptions();
   ~AppOptions();
 
+
   bool Init(const char* options_file_path);
 
   glm::ivec2 window_size_;

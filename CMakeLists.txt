@@ -1,9 +1,21 @@
 cmake_minimum_required (VERSION 3.0)
 
+if(${CMAKE_TOOLCHAIN_FILE})
+  message(STATUS "Using toolchain file ${CMAKE_TOOLCHAIN_FILE}")
+else()
+  message(STATUS "No toolchain file specified; using defaults.")
+  set(CMAKE_SYSTEM_NAME Linux)
+  set(CMAKE_C_COMPILER clang)
+  set(CMAKE_CXX_COMPILER clang++)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+endif()
+
 project (Solaire)
 # The version number
 set (Solaire_VERSION_MAJOR 1)
 set (Solaire_VERSION_MINOR 0)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # define path to dependencies stored within the main repo
 set(DEPS_PATH deps)

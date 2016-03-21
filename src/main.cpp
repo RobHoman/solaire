@@ -1,12 +1,13 @@
 // Copyright 2016 Phil Homan
 
+
+#include <easylogging++.h>
 #include <stdio.h>
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 
 #include "./app.h"
 #include "SolaireConfig.h"
-#include "./easylogging++.h"
 
 INITIALIZE_EASYLOGGINGPP
 

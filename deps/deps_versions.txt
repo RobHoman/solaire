@@ -1,6 +1,7 @@
-DEPENDENCY	VERSION
-easyloggingpp	9.80	
-glad		web-generator
-glfw		3.1.2
-glm		0.9.7.2		
-rapidjson	1.0.2
+DEPENDENCY	VERSION		WHERE
+cppformat	2.0.1		Forked Github Repo - Latest Release
+glad		initial gen	glad web generator
+glm		0.9.7.4		Forked Github Repo - Latest Release	
+rapidjson	1.0.2		Forked Github Repo - Latest Release
+sdl2		2.0.4		https://www.libsdl.org/download-2.0.php
+spdlog		1.0.0		Forked Github Repo - Source
