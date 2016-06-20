@@ -7,6 +7,10 @@
 
 #include <cstdio>
 
+#include "cpputils/file.h"
+
+static auto log = spdlog::get("consoleAndFile");
+
 using rapidjson::FileReadStream;
 using rapidjson::Document;
 
@@ -18,12 +22,10 @@ AppOptions::AppOptions() {
 AppOptions::~AppOptions() {}
 
 bool AppOptions::Init(const char* options_file_path) {
-  FILE* p_options_file = fopen(options_file_path, "rb");
-  char file_read_buffer[65536];
-  FileReadStream file_read_stream(p_options_file, file_read_buffer,
-                               sizeof(file_read_buffer));
-
-  Document options_doc;
-  options_doc.ParseStream(file_read_stream);
+  auto options_json = cpputils::file::get_contents(file_path);
+  if (options_json.empty()) {
+    return false;
+  }
+  auto options_doc = Document.Parse(options_json);
   return true;
 }

@@ -1,28 +1,37 @@
 // Copyright 2016 Phil Homan
 
-
-#include <easylogging++.h>
 #include <stdio.h>
-#include <GLFW/glfw3.h>
 
+#include <vector>
 
-#include "./app.h"
+#include "spdlog/spdlog.h"
+
 #include "SolaireConfig.h"
-
-INITIALIZE_EASYLOGGINGPP
+#include "./app.h"
 
 int main(int argc, char *argv[]) {
-  LOG(INFO) << "S~O~L~A~I~R~E Version "
-            << Solaire_VERSION_MAJOR << "." << Solaire_VERSION_MINOR;
-  LOG(INFO) << "PRAISE THE SUN!";
-  LOG(INFO) << "Program Args: ";
-  for (int i = 0; i < argc; i++) {
-    LOG(INFO) << argv[i];
-  }
+  // Create the logger with sinks to stdout
+  // and a daily log file that rotates at 00:00.
+  std::vector<spdlog::sink_ptr> sinks;
+  sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
+  sinks.push_back(
+      std::make_shared<spdlog::sinks::daily_file_sink_st>(
+          "SolaireLog", "txt", 0, 0));
+  auto log = std::make_shared<spdlog::logger>(
+      "consoleAndFile", begin(sinks), end(sinks));
+  // TODO(phil): Customize the logger format.
+  spdlog::register_logger(log);
+
+  log->info("S~O~L~A~I~R~E Version {}.{}",
+                   Solaire_VERSION_MAJOR, Solaire_VERSION_MINOR);
+  log->info("PRAISE THE SUN!");
+  log->info("Program Args: {}", argv);
 
   gp_app = new App();
   if (!gp_app->InitInstance()) {
-    LOG(FATAL) << "Failed to initalize app.";
+    log->critical("Failed to initalize app.");
+    gp_app->Shutdown();
+    delete gp_app;
     return -1;
   }
 
@@ -30,5 +39,7 @@ int main(int argc, char *argv[]) {
     gp_app->Run();
   }
 
+  gp_app->Shutdown();
+  delete gp_app;
   return gp_app->GetExitCode();
 }

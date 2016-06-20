@@ -2,11 +2,10 @@
 #ifndef SRC_APP_H_
 #define SRC_APP_H_
 
-#include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
 
-#include "./app_logic.h"
 #include "./app_initialization.h"
+#include "./app_logic.h"
 
 class App {
  public:
@@ -15,16 +14,17 @@ class App {
 
   bool InitInstance();
   void Run();
-  bool IsRunning() { return is_running_; }
+  void Shutdown();
+  bool IsRunning() const { return is_running_; }
   void QuitApp() { is_quitting_ = true; }
   void SetQuitting(bool is_quitting) { is_quitting_ = is_quitting; }
-  int GetExitCode() { return exit_code_; }
+  int GetExitCode() const { return exit_code_; }
   AppLogic* GetAppLogic() const { return p_app_logic_; }
-  const glm::ivec2 &GetScreenSize() { return window_size_; }
+  static const glm::ivec2 &GetScreenSize() const { return window_size_; }
 
   AppLogic* p_app_logic_;
   AppOptions options_;
-  GLFWwindow* p_window_;
+  SDL_Window* p_window_;
 
  private:
   glm::ivec2 window_size_;

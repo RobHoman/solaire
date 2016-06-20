@@ -39,9 +39,15 @@ add_executable(Solaire ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLA
 ### Add deps ###
 ################
 # GLFW
-add_subdirectory(${DEPS_PATH}/glfw)
-include_directories(Solaire PRIVATE ${DEPS_PATH}/glfw/include)
-target_link_libraries(Solaire ${GLFW_STATIC_LIBRARIES})
+# add_subdirectory(${DEPS_PATH}/glfw)
+# include_directories(Solaire PRIVATE ${DEPS_PATH}/glfw/include)
+# target_link_libraries(Solaire ${GLFW_STATIC_LIBRARIES})
+
+# SDL2
+add_subdirectory(${DEPS_PATH}/sdl2)
+include_directories(Solaire PRIVATE ${DEPS_PATH}/sdl2/include)
+target_link_libraries(Solaire ${SDL2_STATIC_LIBRARIES})
+message(STATUS ${SDL2_STATIC_LIBRARIES})
 
 # glm
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
@@ -50,10 +56,13 @@ target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glad/include)
 
 # easyloggingpp
-target_include_directories(Solaire PRIVATE ${DEPS_PATH}/easyloggingpp)
+# target_include_directories(Solaire PRIVATE ${DEPS_PATH}/easyloggingpp)
 
 # rapidjson
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/rapidjson/include)
+
+# spdlog
+target_include_directories(Solaire PRIVATE ${DEPS_PATH}/spdlog/include)
 
 # install the exe in bin
 install(TARGETS Solaire DESTINATION bin)
