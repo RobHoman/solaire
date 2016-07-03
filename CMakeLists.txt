@@ -24,10 +24,10 @@ set(DEPS_PATH deps)
 include_directories("${PROJECT_BINARY_DIR}")
 
 # aggregate header file dependencies and source header files before adding the executable
-list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h)
+list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h ${DEPS_PATH}/inih/ini.h)
 
 # aggregate dependencies sources to add to the executable
-list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c)
+list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c ${DEPS_PATH}/inih/ini.c)
 
 # Aggregate Solaire sources
 add_subdirectory(src)
