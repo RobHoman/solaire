@@ -10,7 +10,7 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif()
 
-project (Solaire)
+project (Solaire C CXX)
 # The version number
 set (Solaire_VERSION_MAJOR 1)
 set (Solaire_VERSION_MINOR 0)
@@ -55,8 +55,8 @@ target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 # glad
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glad/include)
 
-# easyloggingpp
-# target_include_directories(Solaire PRIVATE ${DEPS_PATH}/easyloggingpp)
+# inih
+target_include_directories(Solaire PRIVATE ${DEPS_PATH}/inih)
 
 # rapidjson
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/rapidjson/include)

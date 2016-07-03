@@ -1,8 +1,13 @@
 // Copyright 2016 Phil Homan
 
-#include <easylogging++.h>
-
 #include "./app_logic.h"
+
+#include "spdlog/spdlog.h"
+
+namespace solaire {
+namespace app {
+
+static auto log = spdlog::get("consoleAndFile");
 
 AppLogic::AppLogic() {}
 
@@ -10,7 +15,7 @@ bool AppLogic::Init() {
   app_clock_.Init();
   frame_clock_.Init();
 
-  LOG(INFO) << "Initialized the AppLogic";
+  log->info("Initialized the AppLogic.");
   return true;
 }
 
@@ -19,3 +24,6 @@ void AppLogic::Update() {
 
   // TODO(Phil): Main loop logic goes here
 }
+
+}  // namespace app
+}  // namespace solaire

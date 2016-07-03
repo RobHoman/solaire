@@ -1,9 +1,12 @@
 // Copyright 2016 Phil Homan
 
-#ifndef SRC_APP_LOGIC_H_
-#define SRC_APP_LOGIC_H_
+#ifndef APP_LOGIC_H_
+#define APP_LOGIC_H_
 
 #include "./clock.h"
+
+namespace solaire {
+namespace app {
 
 class AppLogic {
  public:
@@ -17,4 +20,8 @@ class AppLogic {
   Clock app_clock_;
   Clock frame_clock_;
 };
-#endif  // SRC_APP_LOGIC_H_
+
+}  // namespace app
+}  // namespace solaire
+
+#endif  // APP_LOGIC_H_

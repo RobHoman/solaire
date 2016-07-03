@@ -18,7 +18,6 @@
 
 #include <vector>
 #include <memory>
-#include <atomic>
 #include <string>
 
 namespace spdlog
@@ -41,6 +40,9 @@ public:
 
     const std::string& name() const;
     bool should_log(level::level_enum) const;
+
+    // automatically call flush() after a message of level log_level or higher is emitted
+    void flush_on(level::level_enum log_level);
 
     // logger.info(cppformat_string, arg1, arg2, arg3, ...) call style
     template <typename... Args> details::line_logger trace(const char* fmt, const Args&... args);
@@ -104,8 +106,8 @@ protected:
     std::string _name;
     std::vector<sink_ptr> _sinks;
     formatter_ptr _formatter;
-    std::atomic_int _level;
-
+    spdlog::level_t _level;
+    spdlog::level_t _flush_level;
 };
 }
 

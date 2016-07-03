@@ -1,26 +1,26 @@
 // Copyright 2016 Phil Homan
 
-#include <GLFW/glfw3.h>
-
 #include "./clock.h"
 
+#include "SDL/SDL_timer.h"
+
 Clock::Clock() {
-  start_glfw_time_ = 0.0;
+  start_sdl_ticks_ = 0;
 }
 
 Clock::~Clock() {}
 
 void Clock::Init() {
-  start_glfw_time_ = glfwGetTime();
+  start_sdl_ticks_ = SDL_GetTicks();
 }
 
-double Clock::GetSeconds() {
-  return glfwGetTime() - start_glfw_time_;
+unsigned int Clock::GetTicks() {
+  return SDL_GetTicks() - start_sdl_ticks_;
 }
 
-double Clock::Restart() {
-  double new_start_time = glfwGetTime();
-  double seconds_at_restart = new_start_time - start_glfw_time_;
-  start_glfw_time_ = new_start_time;
-  return seconds_at_restart;
+unsigned int Clock::Restart() {
+  unsigned int new_start_ticks = SDL_GetTicks();
+  unsigned int ticks_at_restart = new_start_ticks - start_sdl_ticks_;
+  start_sdl_ticks_ = new_start_ticks;
+  return ticks_at_restart;
 }

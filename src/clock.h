@@ -1,7 +1,7 @@
 // Copyright 2016 Phil Homan
 
-#ifndef SRC_CLOCK_H_
-#define SRC_CLOCK_H_
+#ifndef CLOCK_H_
+#define CLOCK_H_
 
 class Clock {
  public:
@@ -9,10 +9,10 @@ class Clock {
   ~Clock();
 
   void Init();
-  double GetSeconds();
-  double Restart();
+  unsigned int GetTicks();
+  unsigned int Restart();
 
  private:
-  double start_glfw_time_;
+  unsigned int start_sdl_ticks_;
 };
-#endif  // SRC_CLOCK_H_
+#endif  // CLOCK_H_

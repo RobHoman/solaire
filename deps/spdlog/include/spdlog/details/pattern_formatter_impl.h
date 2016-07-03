@@ -8,6 +8,7 @@
 #include <spdlog/formatter.h>
 #include <spdlog/details/log_msg.h>
 #include <spdlog/details/os.h>
+#include <spdlog/details/format.h>
 
 #include <chrono>
 #include <ctime>
@@ -618,7 +619,7 @@ inline void spdlog::pattern_formatter::format(details::log_msg& msg)
             f->format(msg, tm_time);
         }
         //write eol
-        msg.formatted << details::os::eol();
+        msg.formatted.write(details::os::eol, details::os::eol_size);
     }
     catch(const fmt::FormatError& e)
     {

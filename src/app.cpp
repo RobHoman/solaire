@@ -4,14 +4,21 @@
 
 #include "./app.h"
 
-static auto log = spdlog::get("consoleAndFile");
+#include "spdlog/spdlog.h"
+
+namespace solaire {
+namespace app {
+
+auto log = spdlog::get("consoleAndFile");
 
 App* gp_app = nullptr;
 
 App::App() {
   gp_app = this;
   p_window_ = nullptr;
+  p_renderer_ = nullptr;
   p_app_logic_ = new AppLogic();
+  p_config_ = new AppConfig();
   window_size_ = glm::ivec2(0, 0);
 
   is_running_ = false;
@@ -21,26 +28,27 @@ App::App() {
 }
 
 static void log_sdl_error(const char* description) {
-  log->err("{} SDL_GetError: {}" description, SDL_GetError());
+  log->error("{} SDL_GetError: {}", description, SDL_GetError());
 }
-static void ShutdownApp() {
+void App::Shutdown() {
   if (p_window_ != nullptr) {
-    SDL_DestroyWindow(p_window);
+    SDL_DestroyWindow(p_window_);
   }
   if (p_renderer_ != nullptr) {
-    SDL_DestroyRenderer(p_renderer);
+    SDL_DestroyRenderer(p_renderer_);
   }
   SDL_Quit();
 }
 
 bool App::InitInstance() {
-  options_.Init("AppOptions.json");
-  window_size_ = options_.window_size_;
+  p_config_->Init("AppConfig.ini");
+  window_size_.x = p_config_->window_x;
+  window_size_.y = p_config_->window_y;
 
   // Initialize SDL2 with the default subsystems
   // and the subsystems specified as flags.
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
-    log_sdl_error("SDL_Init failed.")
+    log_sdl_error("SDL_Init failed.");
     return false;
   }
 
@@ -49,7 +57,7 @@ bool App::InitInstance() {
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16)
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
   // Use the OpenGL core profile with no deprecated functions available
@@ -60,12 +68,12 @@ bool App::InitInstance() {
   // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ?);
 
   p_window_ = SDL_CreateWindow(
-                       options.appName,
+                       "SOLAIRE",
                        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                        window_size_.x, window_size_.y,
                        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
   if (p_window_ == nullptr) {
-    log_sdl_error("SDL_CreateWindow failed.")
+    log_sdl_error("SDL_CreateWindow failed.");
     return false;
   }
 
@@ -76,7 +84,7 @@ bool App::InitInstance() {
 
   // Load all OpenGL functions using the SDL2 loader function
   if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-    log->err("Failed to load glad GLLoader.");
+    log->error("Failed to load glad GLLoader.");
     return false;
   }
 
@@ -85,12 +93,12 @@ bool App::InitInstance() {
   log->info("GL Renderer: {}", glGetString(GL_RENDERER));
   log->info("GL Version: {}", glGetString(GL_VERSION));
 
-  if (options.vsync_enabled) {
+  if (p_config_->graphics_vsync) {
     SDL_GL_SetSwapInterval(1);
   }
 
   if (!p_app_logic_->Init()) {
-    log->err("Failed to initialize app logic.");
+    log->error("Failed to initialize app logic.");
     return false;
   }
 
@@ -109,7 +117,7 @@ void App::Run() {
       }
       if (event.type == SDL_KEYDOWN) {
         // if the escape key is pressed, quit the application
-        if (e.key.keysym.sym == SDLK_ESCAPE) {
+        if (event.key.keysym.sym == SDLK_ESCAPE) {
           quit = true;
         }
       }
@@ -125,3 +133,6 @@ void App::Run() {
     SDL_GL_SwapWindow(p_window_);
   }
 }
+
+}  // namespace app
+}  // namespace solaire

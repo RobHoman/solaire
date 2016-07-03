@@ -18,7 +18,6 @@
 #include <spdlog/sinks/sink.h>
 #include <spdlog/details/mpmc_bounded_q.h>
 #include <spdlog/details/log_msg.h>
-#include <spdlog/details/format.h>
 #include <spdlog/details/os.h>
 #include <spdlog/formatter.h>
 
@@ -122,7 +121,8 @@ public:
                      size_t queue_size,
                      const async_overflow_policy overflow_policy = async_overflow_policy::block_retry,
                      const std::function<void()>& worker_warmup_cb = nullptr,
-                     const std::chrono::milliseconds& flush_interval_ms = std::chrono::milliseconds::zero());
+                     const std::chrono::milliseconds& flush_interval_ms = std::chrono::milliseconds::zero(),
+                     const std::function<void()>& worker_teardown_cb = nullptr);
 
     void log(const details::log_msg& msg);
 
@@ -158,12 +158,15 @@ private:
     // auto periodic sink flush parameter
     const std::chrono::milliseconds _flush_interval_ms;
 
+    // worker thread teardown callback
+    const std::function<void()> _worker_teardown_cb;
+
     // worker thread
     std::thread _worker_thread;
 
     void push_msg(async_msg&& new_msg);
-    // throw last worker thread exception or if worker thread is not active
 
+    // throw last worker thread exception or if worker thread is not active
     void throw_if_bad_worker();
 
     // worker thread main loop
@@ -191,7 +194,8 @@ inline spdlog::details::async_log_helper::async_log_helper(
     size_t queue_size,
     const async_overflow_policy overflow_policy,
     const std::function<void()>& worker_warmup_cb,
-    const std::chrono::milliseconds& flush_interval_ms):
+    const std::chrono::milliseconds& flush_interval_ms,
+    const std::function<void()>& worker_teardown_cb):
     _formatter(formatter),
     _sinks(sinks),
     _q(queue_size),
@@ -200,6 +204,7 @@ inline spdlog::details::async_log_helper::async_log_helper(
     _overflow_policy(overflow_policy),
     _worker_warmup_cb(worker_warmup_cb),
     _flush_interval_ms(flush_interval_ms),
+    _worker_teardown_cb(worker_teardown_cb),
     _worker_thread(&async_log_helper::worker_loop, this)
 {}
 
@@ -217,7 +222,7 @@ inline spdlog::details::async_log_helper::~async_log_helper()
 }
 
 
-//Try to push and block until succeeded
+//Try to push and block until succeeded (if the policy is not to discard when the queue is full)
 inline void spdlog::details::async_log_helper::log(const details::log_msg& msg)
 {
     push_msg(async_msg(msg));
@@ -225,7 +230,6 @@ inline void spdlog::details::async_log_helper::log(const details::log_msg& msg)
 
 }
 
-//Try to push and block until succeeded
 inline void spdlog::details::async_log_helper::push_msg(details::async_log_helper::async_msg&& new_msg)
 {
     throw_if_bad_worker();
@@ -256,6 +260,7 @@ inline void spdlog::details::async_log_helper::worker_loop()
         auto last_pop = details::os::now();
         auto last_flush = last_pop;
         while(process_next_msg(last_pop, last_flush));
+        if (_worker_teardown_cb) _worker_teardown_cb();
     }
     catch (const std::exception& ex)
     {
@@ -268,7 +273,7 @@ inline void spdlog::details::async_log_helper::worker_loop()
 }
 
 // process next message in the queue
-// return true if this thread should still be active (no msg with level::off was received)
+// return true if this thread should still be active (while no terminate msg was received)
 inline bool spdlog::details::async_log_helper::process_next_msg(log_clock::time_point& last_pop, log_clock::time_point& last_flush)
 {
 
@@ -310,6 +315,7 @@ inline bool spdlog::details::async_log_helper::process_next_msg(log_clock::time_
     }
 }
 
+// flush all sinks if _flush_interval_ms has expired
 inline void spdlog::details::async_log_helper::handle_flush_interval(log_clock::time_point& now, log_clock::time_point& last_flush)
 {
     auto should_flush = _flush_requested || (_flush_interval_ms != std::chrono::milliseconds::zero() && now - last_flush >= _flush_interval_ms);
@@ -321,34 +327,37 @@ inline void spdlog::details::async_log_helper::handle_flush_interval(log_clock::
         _flush_requested = false;
     }
 }
+
 inline void spdlog::details::async_log_helper::set_formatter(formatter_ptr msg_formatter)
 {
     _formatter = msg_formatter;
 }
 
 
-// sleep,yield or return immediatly using the time passed since last message as a hint
+// spin, yield or sleep. use the time passed since last message as a hint
 inline void spdlog::details::async_log_helper::sleep_or_yield(const spdlog::log_clock::time_point& now, const spdlog::log_clock::time_point& last_op_time)
 {
-    using std::chrono::milliseconds;
     using namespace std::this_thread;
+    using std::chrono::milliseconds;
+    using std::chrono::microseconds;
 
     auto time_since_op = now - last_op_time;
 
-    // spin upto 1 ms
-    if (time_since_op <= milliseconds(1))
+    // spin upto 50 micros
+    if (time_since_op <= microseconds(50))
         return;
 
-    // yield upto 10ms
-    if (time_since_op <= milliseconds(10))
+    // yield upto 150 micros
+    if (time_since_op <= microseconds(100))
         return yield();
 
 
-    // sleep for half of duration since last op
-    if (time_since_op <= milliseconds(100))
-        return sleep_for(time_since_op / 2);
+    // sleep for 20 ms upto 200 ms
+    if (time_since_op <= milliseconds(200))
+        return sleep_for(milliseconds(20));
 
-    return sleep_for(milliseconds(100));
+    // sleep for 200 ms
+    return sleep_for(milliseconds(200));
 }
 
 // throw if the worker thread threw an exception or not active

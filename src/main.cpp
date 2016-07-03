@@ -9,6 +9,8 @@
 #include "SolaireConfig.h"
 #include "./app.h"
 
+using ::solaire::app::gp_app;
+
 int main(int argc, char *argv[]) {
   // Create the logger with sinks to stdout
   // and a daily log file that rotates at 00:00.
@@ -27,7 +29,7 @@ int main(int argc, char *argv[]) {
   log->info("PRAISE THE SUN!");
   log->info("Program Args: {}", argv);
 
-  gp_app = new App();
+  gp_app = new solaire::app::App();
   if (!gp_app->InitInstance()) {
     log->critical("Failed to initalize app.");
     gp_app->Shutdown();

@@ -3,17 +3,48 @@
 #include "./app_config.h"
 
 #include <cstdio>
+#include <iostream>
+#include <cstring>
 
-static auto log = spdlog::get("consoleandfile");
+#include "spdlog/spdlog.h"
+#include "ini.h"
+
+namespace solaire {
+namespace app {
+
+static auto log = spdlog::get("consoleAndFile");
+
+// Define each type parser to easily call
+// the right function via macro token concatenation.
+
+// Simple char* to int
+int parse_int(const char* value) {
+  return std::stoi(value);
+}
+
+// Only allow case insensitive "true" and "false".
+// Log and default to false otherwise.
+bool parse_bool(const char* value) {
+  if (strcasecmp(value, "true") == 0) {
+    return true;
+  } else if (strcasecmp(value, "false") == 0) {
+    return false;
+  }
+  log->warn("Invalid config bool value: {}."
+            "Setting to false by default.", value);
+  return false;
+}
 
 /* process a line of the ini file, storing valid values */
 int ini_handler(void *user, const char* ini_section, const char* ini_property,
                 const char *value) {
+  AppConfig* appConfig = (AppConfig*)user;
   // Empty if to allow macro expansion to use else ifs
   if (0) {}
-  #define CONFIG(section, property, default) \
-    else if (stricmp(ini_section, #section) == 0 && \
-             stricmp(ini_property, #property) == 0) section##_##property = strdup(value);
+#define CONFIG(section, property, type, default)     \
+    else if (strcasecmp(ini_section, #section) == 0 && \
+             strcasecmp(ini_property, #property) == 0) \
+                         appConfig->section##_##property = parse##_##type(value);
   #include "app_config.def"
 
   return 1;
@@ -21,22 +52,26 @@ int ini_handler(void *user, const char* ini_section, const char* ini_property,
 
 AppConfig::AppConfig() {
   // set all of the config variables to reasonable defaults
-  #define CONFIG(section, property, default) section##_##property = default;
+#define CONFIG(section, property, type, default) section##_##property = default;
   #include "app_config.def"
 }
 
 AppConfig::~AppConfig() {}
 
-bool AppConfig::init(const char* ini_file_path) {
-  if (ini_parse(ini_file_path, handler, &config) < 0)
-    printf("can't load 'test.ini', using defaults\n");
-  dump_config(&config);
+bool AppConfig::Init(const char* ini_file_path) {
+  if (ini_parse(ini_file_path, ini_handler, this) < 0)
+    log->warn("Can't load app config '{}'. Using defaults", ini_file_path);
+  LogConfig();
   return 0;
 }
 
 /* print all the variables in the config, one per line */
-static void AppConfig::LogConfig() {
+void AppConfig::LogConfig() {
   log->info("Logging the config variables and values:");
-    #define CONFIG(section, property, default) log->info("{}_{} = {}", #section, #property, section##_##property);
+#define CONFIG(section, property, type, default) \
+  log->info("{}_{} = {}", #section, #property, section##_##property);
     #include "app_config.def"
 }
+
+}  // namespace app
+}  // namespace solaire

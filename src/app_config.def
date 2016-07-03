@@ -1,6 +1,6 @@
 // The definition supermacro of the application configuration with default values.
-/* CONFIG(section, property, default) */
-CONFIG(window, x, "800")
-CONFIG(window, y, "600")
-CONFIG(graphics, vsync, "false")
+/* CONFIG(section, property, type, default) */
+CONFIG(window, x, int, 800)
+CONFIG(window, y, int, 600)
+CONFIG(graphics, vsync, bool, false)
 #undef CONFIG 

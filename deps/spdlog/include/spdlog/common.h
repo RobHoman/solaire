@@ -9,15 +9,32 @@
 #include <initializer_list>
 #include <chrono>
 #include <memory>
+#include <atomic>
 #include <exception>
-
-//visual studio does not support noexcept yet
-#ifndef _MSC_VER
-#define SPDLOG_NOEXCEPT noexcept
-#else
-#define SPDLOG_NOEXCEPT throw()
+#if defined(_WIN32) && defined(SPDLOG_WCHAR_FILENAMES)
+#include <codecvt>
+#include <locale>
 #endif
 
+#include <spdlog/details/null_mutex.h>
+
+//visual studio upto 2013 does not support noexcept nor constexpr
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#define SPDLOG_NOEXCEPT throw()
+#define SPDLOG_CONSTEXPR
+#else
+#define SPDLOG_NOEXCEPT noexcept
+#define SPDLOG_CONSTEXPR constexpr
+#endif
+
+#if defined(__GNUC__)  || defined(__clang__)
+#define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("DEPRECATED")
+#define DEPRECATED
+#endif
 
 namespace spdlog
 {
@@ -29,12 +46,15 @@ namespace sinks
 class sink;
 }
 
-// Common types across the lib
 using log_clock = std::chrono::system_clock;
 using sink_ptr = std::shared_ptr < sinks::sink >;
 using sinks_init_list = std::initializer_list < sink_ptr >;
 using formatter_ptr = std::shared_ptr<spdlog::formatter>;
-
+#if defined(SPDLOG_NO_ATOMIC_LEVELS)
+using level_t = details::null_atomic_int;
+#else
+using level_t = std::atomic_int;
+#endif
 
 //Log level enum
 namespace level
@@ -94,5 +114,15 @@ private:
     std::string _msg;
 
 };
+
+//
+// wchar support for windows file names (SPDLOG_WCHAR_FILENAMES must be defined)
+//
+#if defined(_WIN32) && defined(SPDLOG_WCHAR_FILENAMES)
+using filename_t = std::wstring;
+#else
+using filename_t = std::string;
+#endif
+
 
 } //spdlog
