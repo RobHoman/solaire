@@ -1,21 +1,25 @@
 cmake_minimum_required (VERSION 3.0)
 
-if(${CMAKE_TOOLCHAIN_FILE})
-  message(STATUS "Using toolchain file ${CMAKE_TOOLCHAIN_FILE}")
-else()
+message(CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE})
+if(${CMAKE_TOOLCHAIN_FILE} STREQUAL "")
   message(STATUS "No toolchain file specified; using defaults.")
   set(CMAKE_SYSTEM_NAME Linux)
   set(CMAKE_C_COMPILER clang)
   set(CMAKE_CXX_COMPILER clang++)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+else()
+  message(STATUS "Using toolchain file ${CMAKE_TOOLCHAIN_FILE}")
 endif()
 
-project (Solaire C CXX)
+project(Solaire C CXX)
 # The version number
 set (Solaire_VERSION_MAJOR 1)
 set (Solaire_VERSION_MINOR 0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
+message(CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH})
 
 # define path to dependencies stored within the main repo
 set(DEPS_PATH deps)
@@ -29,26 +33,32 @@ list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h ${DEPS_PATH}/inih
 # aggregate dependencies sources to add to the executable
 list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c ${DEPS_PATH}/inih/ini.c)
 
-# Aggregate Solaire sources
+# Aggregate Solaire sources. Sets SOLAIRE_HEADERS and SOLAIRE_SOURCES
 add_subdirectory(src)
+message(SOLAIRE_SOURCES: ${SOLAIRE_SOURCES})
+message(SOLAIRE_HEADERS: ${SOLAIRE_HEADERS})
 
 # add the executable
 add_executable(Solaire ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLAIRE_SOURCES})
+# Add the Solaire directories so #include can find the headers.
+target_include_directories(Solaire PRIVATE src)
 
 ################
 ### Add deps ###
 ################
-# GLFW
-# add_subdirectory(${DEPS_PATH}/glfw)
-# include_directories(Solaire PRIVATE ${DEPS_PATH}/glfw/include)
-# target_link_libraries(Solaire ${GLFW_STATIC_LIBRARIES})
+target_link_libraries(Solaire -ldl -lm)
 
 # SDL2
-add_subdirectory(${DEPS_PATH}/sdl2)
-include_directories(Solaire PRIVATE ${DEPS_PATH}/sdl2/include)
-target_link_libraries(Solaire ${SDL2_STATIC_LIBRARIES})
-message(STATUS ${SDL2_STATIC_LIBRARIES})
-
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+target_include_directories(Solaire PRIVATE
+  ${SDL2_INCLUDE_DIR}
+  ${SDL2_IMAGE_INCLUDE_DIR}
+  ${SDL2_TTF_INCLUDE_DIR})
+target_link_libraries(Solaire ${SDL2_LIBRARY}
+                             ${SDL2_IMAGE_LIBRARIES}
+                             ${SDL2_TTF_LIBRARIES})
 # glm
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 

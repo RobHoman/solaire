@@ -1,22 +1,16 @@
 // Copyright 2016 Phil Homan
 
-#include "./clock.h"
+#include "app/clock.h"
 
 #include "SDL/SDL_timer.h"
 
-Clock::Clock() {
-  start_sdl_ticks_ = 0;
-}
+Clock::Clock() { start_sdl_ticks_ = 0; }
 
 Clock::~Clock() {}
 
-void Clock::Init() {
-  start_sdl_ticks_ = SDL_GetTicks();
-}
+void Clock::Init() { start_sdl_ticks_ = SDL_GetTicks(); }
 
-unsigned int Clock::GetTicks() {
-  return SDL_GetTicks() - start_sdl_ticks_;
-}
+unsigned int Clock::GetTicks() { return SDL_GetTicks() - start_sdl_ticks_; }
 
 unsigned int Clock::Restart() {
   unsigned int new_start_ticks = SDL_GetTicks();

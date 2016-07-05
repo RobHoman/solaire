@@ -4,23 +4,16 @@ configure_file (
 	"${PROJECT_BINARY_DIR}/SolaireConfig.h"
 	)
 
+# Add all of the directories which aggregate the .cpp and .h files into Solaire_SOURCES and Solaire_HEADERS respectively
+add_subdirectory(app)
+
+# Add main.cpp
 set(Solaire_SOURCES
 	${Solaire_SOURCES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/app.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/app_config.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/app_logic.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/clock.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   )
 
-set(Solaire_HEADERS
-  ${Solaire_HEADERS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/app.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/app_config.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/app_logic.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/clock.h
-  )
-
+# Set the all caps versions for the root CMakeLists file.
 set(SOLAIRE_SOURCES
 	${Solaire_SOURCES}
 	PARENT_SCOPE

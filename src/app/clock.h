@@ -1,7 +1,7 @@
 // Copyright 2016 Phil Homan
 
-#ifndef CLOCK_H_
-#define CLOCK_H_
+#ifndef APP_CLOCK_H_
+#define APP_CLOCK_H_
 
 class Clock {
  public:
@@ -15,4 +15,4 @@ class Clock {
  private:
   unsigned int start_sdl_ticks_;
 };
-#endif  // CLOCK_H_
+#endif  // APP_CLOCK_H_

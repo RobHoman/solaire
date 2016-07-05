@@ -1,12 +1,11 @@
 // Copyright 2016 phil homan
 
-#include "./app_config.h"
+#include "app/app_config.h"
 
 #include <cstdio>
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
-#include "spdlog/spdlog.h"
 #include "ini.h"
 
 namespace solaire {
@@ -18,59 +17,58 @@ static auto log = spdlog::get("consoleAndFile");
 // the right function via macro token concatenation.
 
 // Simple char* to int
-int parse_int(const char* value) {
-  return std::stoi(value);
-}
+int parse_int(const char* value) { return std::stoi(value); }
 
 // Only allow case insensitive "true" and "false".
-// Log and default to false otherwise.
+// Default to false otherwise.
 bool parse_bool(const char* value) {
   if (strcasecmp(value, "true") == 0) {
     return true;
   } else if (strcasecmp(value, "false") == 0) {
     return false;
   }
-  log->warn("Invalid config bool value: {}."
-            "Setting to false by default.", value);
   return false;
 }
 
 /* process a line of the ini file, storing valid values */
-int ini_handler(void *user, const char* ini_section, const char* ini_property,
-                const char *value) {
+int ini_handler(void* user, const char* ini_section, const char* ini_property,
+                const char* value) {
   AppConfig* appConfig = (AppConfig*)user;
   // Empty if to allow macro expansion to use else ifs
-  if (0) {}
+  if (0) {
+  }
 #define CONFIG(section, property, type, default)     \
-    else if (strcasecmp(ini_section, #section) == 0 && \
-             strcasecmp(ini_property, #property) == 0) \
-                         appConfig->section##_##property = parse##_##type(value);
-  #include "app_config.def"
+  else if (strcasecmp(ini_section, #section) == 0 && \
+           strcasecmp(ini_property, #property) == 0) \
+      appConfig->section##_##property = parse##_##type(value);
+#include "app_config.def"
 
   return 1;
 }
 
 AppConfig::AppConfig() {
-  // set all of the config variables to reasonable defaults
+  log_ = spdlog::get("consoleAndFile");
+
+// set all of the config variables to reasonable defaults
 #define CONFIG(section, property, type, default) section##_##property = default;
-  #include "app_config.def"
+#include "app_config.def"
 }
 
 AppConfig::~AppConfig() {}
 
 bool AppConfig::Init(const char* ini_file_path) {
   if (ini_parse(ini_file_path, ini_handler, this) < 0)
-    log->warn("Can't load app config '{}'. Using defaults", ini_file_path);
+    log_->warn("Can't load app config '{}'. Using defaults", ini_file_path);
   LogConfig();
   return 0;
 }
 
 /* print all the variables in the config, one per line */
 void AppConfig::LogConfig() {
-  log->info("Logging the config variables and values:");
+  log_->info("Logging the config variables and values:");
 #define CONFIG(section, property, type, default) \
-  log->info("{}_{} = {}", #section, #property, section##_##property);
-    #include "app_config.def"
+  log_->info("{}_{} = {}", #section, #property, section##_##property);
+#include "app_config.def"
 }
 
 }  // namespace app
