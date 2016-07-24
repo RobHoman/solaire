@@ -13,7 +13,7 @@ endif()
 
 project(Solaire C CXX)
 # The version number
-set (Solaire_VERSION_MAJOR 1)
+set (Solaire_VERSION_MAJOR 0)
 set (Solaire_VERSION_MINOR 0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,24 +28,23 @@ set(DEPS_PATH deps)
 include_directories("${PROJECT_BINARY_DIR}")
 
 # aggregate header file dependencies and source header files before adding the executable
-list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h ${DEPS_PATH}/inih/ini.h)
+list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h)
 
 # aggregate dependencies sources to add to the executable
-list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c ${DEPS_PATH}/inih/ini.c)
+list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c)
 
 # Aggregate Solaire sources. Sets SOLAIRE_HEADERS and SOLAIRE_SOURCES
 add_subdirectory(src)
 message(SOLAIRE_SOURCES: ${SOLAIRE_SOURCES})
 message(SOLAIRE_HEADERS: ${SOLAIRE_HEADERS})
 
-# add the executable
 add_executable(Solaire ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLAIRE_SOURCES})
-# Add the Solaire directories so #include can find the headers.
 target_include_directories(Solaire PRIVATE src)
 
 ################
 ### Add deps ###
 ################
+# TODO(phil): Document here what -ldl and -lm are... I don't remember.
 target_link_libraries(Solaire -ldl -lm)
 
 # SDL2
@@ -64,15 +63,6 @@ target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 
 # glad
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glad/include)
-
-# inih
-target_include_directories(Solaire PRIVATE ${DEPS_PATH}/inih)
-
-# rapidjson
-target_include_directories(Solaire PRIVATE ${DEPS_PATH}/rapidjson/include)
-
-# spdlog
-target_include_directories(Solaire PRIVATE ${DEPS_PATH}/spdlog/include)
 
 # install the exe in bin
 install(TARGETS Solaire DESTINATION bin)

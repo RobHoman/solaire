@@ -1,55 +1,70 @@
 // Copyright 2016 Phil Homan
 
-#include <stdio.h>
+#include "SDL.h"
 
-#include <vector>
+int main(int argc, char* argv[]) {
+  bool globalRunning = false;
+  SDL_Window* window;
+  SDL_GLContext gl_context;
 
-#include "spdlog/spdlog.h"
+  // NOTE(phil)Initialize SDL2 with the default subsystems
+  // and the subsystems specified as flags.
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0) {
+    // NOTE(phil) Setup the minimum required OpenGL context attributes
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-#include "SolaireConfig.h"
-#include "app/app.h"
+    // NOTE(phil) Use the OpenGL core profile
+    // with no deprecated functions available
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_CORE);
 
-int main(int argc, char *argv[]) {
-  // Create the logger with sinks to stdout
-  // and a daily log file that rotates at 00:00.
-  std::vector<spdlog::sink_ptr> sinks;
-  sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
-  sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_st>(
-      "SolaireLog", "txt", 0, 0));
-  auto log = std::make_shared<spdlog::logger>("consoleAndFile", begin(sinks),
-                                              end(sinks));
-  // TODO(phil): Customize the logger format.
-  spdlog::register_logger(log);
+    // TODO(phil): Figure out how to determine what version of OpenGL to use
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ?);
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ?);
 
-  log->info("S~O~L~A~I~R~E Version {}.{}", Solaire_VERSION_MAJOR,
-            Solaire_VERSION_MINOR);
-  log->info("PRAISE THE SUN!");
-
-  log->info("Program Args: ");
-  for (int i = 0; i < argc; i++) {
-    log->info("Arg{}: {}", i, argv[i]);
+    if (window = SDL_CreateWindow("SOLAIRE", SDL_WINDOWPOS_CENTERED,
+                                  SDL_WINDOWPOS_CENTERED, 1280, 1020,
+                                  SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN)) {
+      if (gl_context = SDL_GL_CreateContext(p_window_)) {
+        // NOTE(phil) Load all OpenGL functions using the SDL2 loader function
+        if (gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+          globalRunning = true;
+          while (globalRunning) {
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+              if (event.type == SDL_QUIT) {
+                globalRunning = false;
+              }
+              if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                  globalRunning = false;
+                }
+              }
+              // Set background color.
+              glClearColor(1.0, 0.0, 0.5, 1.0);
+              // Clear back buffer
+              glClear(GL_COLOR_BUFFER_BIT);
+              // Render, swapping back and front buffer.
+              SDL_GL_SwapWindow(window);
+            }
+          }
+        } else {
+          // TODO(phil) Logging
+        }
+      } else {
+        // TODO(phil) Logging
+      }
+    } else {
+      // TODO(phil) Logging
+    }
+  } else {
+    // TODO(phil) Logging
   }
-  log->info("Done printing program args.");
 
-  solaire::app::gp_app = new solaire::app::App();
-  log->info("Created instance of App()");
-  if (solaire::app::gp_app == nullptr) {
-    log->info("Somehow gp_app is nullptr.");
-  }
-  if (!solaire::app::gp_app->InitInstance()) {
-    log->critical("Failed to initalize app.");
-    solaire::app::gp_app->Shutdown();
-    delete solaire::app::gp_app;
-    return -1;
-  }
-
-  while (solaire::app::gp_app->IsRunning()) {
-    solaire::app::gp_app->Run();
-  }
-
-  solaire::app::gp_app->Shutdown();
-  int exit_code = solaire::app::gp_app->GetExitCode();
-  delete solaire::app::gp_app;
-
-  return exit_code;
+  return 1;
 }

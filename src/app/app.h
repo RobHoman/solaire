@@ -10,7 +10,6 @@
 #include "app/app_logic.h"
 
 #include "SDL.h"
-#include "spdlog/spdlog.h"
 
 namespace solaire {
 namespace app {
