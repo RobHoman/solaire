@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 
 message(CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE})
-if(${CMAKE_TOOLCHAIN_FILE} STREQUAL "")
+if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
   message(STATUS "No toolchain file specified; using defaults.")
   set(CMAKE_SYSTEM_NAME Linux)
   set(CMAKE_C_COMPILER clang)

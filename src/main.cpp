@@ -1,6 +1,7 @@
 // Copyright 2016 Phil Homan
 
 #include "SDL.h"
+#include "glad/glad.h"
 
 int main(int argc, char* argv[]) {
   bool globalRunning = false;
@@ -26,11 +27,12 @@ int main(int argc, char* argv[]) {
     // TODO(phil): Figure out how to determine what version of OpenGL to use
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ?);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ?);
-
-    if (window = SDL_CreateWindow("SOLAIRE", SDL_WINDOWPOS_CENTERED,
-                                  SDL_WINDOWPOS_CENTERED, 1280, 1020,
-                                  SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN)) {
-      if (gl_context = SDL_GL_CreateContext(p_window_)) {
+    window = SDL_CreateWindow("SOLAIRE", SDL_WINDOWPOS_CENTERED,
+                              SDL_WINDOWPOS_CENTERED, 1280, 1020,
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    if (window) {
+      gl_context = SDL_GL_CreateContext(window);
+      if (gl_context) {
         // NOTE(phil) Load all OpenGL functions using the SDL2 loader function
         if (gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
           globalRunning = true;
