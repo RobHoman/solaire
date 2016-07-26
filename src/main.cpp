@@ -1,7 +1,66 @@
 // Copyright 2016 Phil Homan
 
+#include <sys/mman.h>
+
+#include "./platform_services.h"
+
 #include "SDL.h"
 #include "glad/glad.h"
+
+#include "./types.h"
+#include "app/app.h"
+
+void DebugPlatformFreeFileMemory(int64 size, void* memory) {
+  if (memory) {
+    munmap(memory, size);
+  }
+}
+
+debug_read_file DebugPlatformReadEntireFile(const char* filename) {
+  debug_read_file result = {0};
+
+  SDL_RWops* io = SDL_RWFromFile(filename, "rb");
+  if (io) {
+    int64 file_size = int64{SDL_RWsize(io)};
+    result.memory =
+        mmap(0 /* null addr */, file_size, PROT_READ | PROT_WRITE,
+             MAP_ANONYMOUS | MAP_PRIVATE, -1 /* null fd */, 0 /* no offset */);
+    if (result.memory != MAP_FAILED) {
+      int64 bytes_read = SDL_RWread(io, result.memory, 1 /* size */, file_size);
+      if (bytes_read == file_size) {
+        result.size = file_size;
+      } else {
+        // TODO(phil): Log
+        DebugPlatformFreeFileMemory(file_size, result.memory);
+        result.size = 0;
+      }
+    } else {
+      // TODO(phil): Log
+    }
+    SDL_RWclose(io);
+  } else {
+    // TODO(phil): Log
+  }
+
+  return result;
+}
+
+bool DebugPlatformWriteEntireFile(const char* filename, int64 size,
+                                  void* memory) {
+  bool result = false;
+
+  SDL_RWops* io = SDL_RWFromFile(filename, "w");
+  if (io) {
+    if (SDL_RWwrite(io, memory, size, 1) == 1) {
+      result = true;
+    } else {
+      // TODO(phil): Log
+    }
+    SDL_RWclose(io);
+  }
+
+  return result;
+}
 
 int main(int argc, char* argv[]) {
   bool globalRunning = false;
@@ -27,6 +86,7 @@ int main(int argc, char* argv[]) {
     // TODO(phil): Figure out how to determine what version of OpenGL to use
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ?);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ?);
+
     window = SDL_CreateWindow("SOLAIRE", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, 1280, 1020,
                               SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
@@ -37,6 +97,8 @@ int main(int argc, char* argv[]) {
         if (gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
           globalRunning = true;
           while (globalRunning) {
+            // TODO(phil): Put input handling into a separate function
+            // and pass captured input along to the App.
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
               if (event.type == SDL_QUIT) {
@@ -47,25 +109,30 @@ int main(int argc, char* argv[]) {
                   globalRunning = false;
                 }
               }
-              // Set background color.
-              glClearColor(1.0, 0.0, 0.5, 1.0);
-              // Clear back buffer
-              glClear(GL_COLOR_BUFFER_BIT);
+
+              solaire::app::AppUpdateAndRender();
               // Render, swapping back and front buffer.
               SDL_GL_SwapWindow(window);
             }
           }
         } else {
-          // TODO(phil) Logging
+          // TODO(phil) Log
+          SDL_GetError();
         }
       } else {
-        // TODO(phil) Logging
+        // TODO(phil) Log
+        SDL_GetError();
       }
     } else {
-      // TODO(phil) Logging
+      // TODO(phil) Log
+      SDL_GetError();
     }
+
+    SDL_Quit();
+
   } else {
-    // TODO(phil) Logging
+    // TODO(phil) Log
+    SDL_GetError();
   }
 
   return 1;

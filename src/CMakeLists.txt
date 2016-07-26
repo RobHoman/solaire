@@ -1,5 +1,5 @@
 # Add all of the directories which aggregate the .cpp and .h files into Solaire_SOURCES and Solaire_HEADERS respectively
-# add_subdirectory(app)
+add_subdirectory(app)
 
 # Add main.cpp
 set(Solaire_SOURCES
