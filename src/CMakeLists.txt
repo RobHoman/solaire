@@ -1,11 +1,7 @@
 # Add all of the directories which aggregate the .cpp and .h files into Solaire_SOURCES and Solaire_HEADERS respectively
 add_subdirectory(app)
-
-# Add main.cpp
-set(Solaire_SOURCES
-	${Solaire_SOURCES}
-	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  )
+add_subdirectory(common)
+add_subdirectory(kato)
 
 # Set the all caps versions for the root CMakeLists file.
 set(SOLAIRE_SOURCES

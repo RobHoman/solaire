@@ -1,0 +1,6 @@
+set(Solaire_HEADERS
+  ${Solaire_HEADERS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/macros.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/types.h
+  PARENT_SCOPE
+  )
