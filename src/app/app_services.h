@@ -12,9 +12,13 @@ struct AppMemory {
   uint64 transient_storage_size;
   void* permanent_storage;
   void* transient_storage;
+  bool is_initialized;
 };
 
-struct AppState {};
+struct AppState {
+  float tone_hz;
+  int16 tone_volume;
+};
 
 struct AppKeyState {
   bool pressed;
@@ -33,7 +37,16 @@ struct AppInput {
   };
 };
 
+struct AppSoundOutput {
+  int samples_per_second;
+  int16* samples;
+  uint32 samples_to_write;
+  // TODO(phil): Remove running sample index?
+  uint32 running_sample_index;
+};
+
 void AppUpdateAndRender(AppMemory* memory, AppInput* input);
+void AppGetSoundSamples(AppMemory* memory, AppSoundOutput* app_sound_output);
 
 }  // namespace app
 }  // namespace kato
