@@ -12,6 +12,10 @@
 #include "common/macros.h"
 #include "common/types.h"
 
+// TODO(phil): Eventually make these non-global
+global_var bool global_running;
+global_var uint64 global_perf_count_freq;
+
 void DebugPlatformFreeFileMemory(int64 size, void* memory) {
   if (memory) {
     munmap(memory, size);
@@ -101,8 +105,27 @@ SDL_AudioDeviceID SDLInitAudio(int samples_per_second,
   return audio_device_id;
 }
 
+// TODO(phil): Mark this and other methods in this file internal?
+int SDLGetWindowRefreshRate(SDL_Window* window) {
+  SDL_DisplayMode mode;
+  int display_index = SDL_GetWindowDisplayIndex(window);
+  int default_refresh_rate = 60;
+  if (SDL_GetCurrentDisplayMode(display_index, &mode) != 0) {
+    return default_refresh_rate;
+  }
+  if (mode.refresh_rate == 0) {
+    return default_refresh_rate;
+  }
+  return mode.refresh_rate;
+}
+
+double SDLGetSecondsElapsed(uint64 begin_counter, uint64 end_counter) {
+  return ((double)(end_counter - begin_counter) /
+          (double)(global_perf_count_freq));
+}
+
 int main(int argc, char* argv[]) {
-  bool globalRunning = false;
+  global_running = false;
   SDL_Window* window;
   SDL_GLContext gl_context;
 
@@ -148,6 +171,9 @@ int main(int argc, char* argv[]) {
         SDL_CreateWindow("KATO", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                          1280, 1020, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
+    // TODO(phil): Move the sound buffer creation/logic to after the gl context
+    // creation and use the app update hz and target seconds per frame for audio
+    // sync.
     int sound_samples_per_second = 48000;
     // NOTE(phil): The number of samples in the sdl sound buffer is the number
     // of samples pulled from the SDL audio queue, however 1024 samples is the
@@ -162,6 +188,9 @@ int main(int argc, char* argv[]) {
     SDL_AudioDeviceID audio_device_id =
         SDLInitAudio(sound_samples_per_second, sound_buffer_size_in_samples);
 
+    // TODO(phil): Make the sound output frame rate independent.
+    // TODO(phil): Figure out if the target sound queue frames can intelligently
+    // be determined and how to reasonably sync the sound to the frame flip.
     uint32 bytes_per_sound_sample = sizeof(int16) * 2;
     float target_sound_queue_frames = 2.f;
     uint32 target_sound_queue_samples =
@@ -184,16 +213,20 @@ int main(int argc, char* argv[]) {
       if (gl_context) {
         // NOTE(phil) Load all OpenGL functions using the SDL2 loader function
         if (gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-          globalRunning = true;
+          uint32 window_refresh_hz = SDLGetWindowRefreshRate();
+          float app_update_hz = window_refresh_hz / 2.f;
+          float target_seconds_per_frame = 1.f / app_update_hz;
+
+          global_running = true;
 
           kato::app::AppInput input[2] = {};
           kato::app::AppInput* new_input = &input[0];
           kato::app::AppInput* last_input = &input[1];
 
           uint64 begin_cycle_count = _rdtsc();
-          uint64 perf_count_freq = SDL_GetPerformanceFrequency();
+          global_perf_count_freq = SDL_GetPerformanceFrequency();
           uint64 begin_counter = SDL_GetPerformanceCounter();
-          while (globalRunning) {
+          while (global_running) {
             // TODO(phil): For each button copy the pressed state. Zero the
             // transition counts somehow.
             // TODO(phil): Zero the new input?
@@ -209,7 +242,7 @@ int main(int argc, char* argv[]) {
             while (SDL_PollEvent(&event)) {
               switch (event.type) {
                 case SDL_QUIT: {
-                  globalRunning = false;
+                  global_running = false;
                   break;
                 }
                 case SDL_KEYDOWN:
@@ -217,7 +250,7 @@ int main(int argc, char* argv[]) {
                   bool pressed = (event.type == SDL_KEYDOWN);
                   switch (event.key.keysym.sym) {
                     case SDLK_ESCAPE: {
-                      globalRunning = false;
+                      global_running = false;
                       break;
                     }
                     case SDLK_w: {
@@ -240,7 +273,6 @@ int main(int argc, char* argv[]) {
                 }
               }
             }
-
 
             uint32 sound_bytes_to_write =
                 target_sound_queue_bytes -
@@ -270,10 +302,10 @@ int main(int argc, char* argv[]) {
                 ((double)elapsed_cycles / (1000.L * 1000.L));
 
             uint64 end_counter = SDL_GetPerformanceCounter();
-            uint64 elapsed_counter = end_counter - begin_counter;
-            double frame_ms =
-                (1000.L * (double)elapsed_counter) / (double)perf_count_freq;
-            double fps = (double)perf_count_freq / (double)elapsed_counter;
+            double elapsed_seconds =
+                SDLGetSecondsElapsed(begin_counter, end_counter);
+            double frame_ms = 1000.L * (double)elapsed_seconds;
+            double fps = 1.L / elapsed_seconds;
 
             printf("%.02f ms/f, %0.2ff/s, %.02fmc/f\n", frame_ms, fps,
                    frame_million_cycles);
