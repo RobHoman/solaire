@@ -1,4 +1,4 @@
-# Add all of the directories which aggregate the .cpp and .h files into Solaire_SOURCES and Solaire_HEADERS respectively
+# Add all of the directories which aggregate the .cpp and .h files into Solaire_SOURCES and Solaire_HEADERS respectively. Ditto for Kato.
 add_subdirectory(app)
 add_subdirectory(common)
 add_subdirectory(kato)
@@ -11,5 +11,15 @@ set(SOLAIRE_SOURCES
 
 set(SOLAIRE_HEADERS
   ${Solaire_HEADERS}
+  PARENT_SCOPE
+  )
+
+set(KATO_SOURCES
+	${Kato_SOURCES}
+	PARENT_SCOPE
+  )
+
+set(KATO_HEADERS
+  ${Kato_HEADERS}
   PARENT_SCOPE
   )

@@ -37,32 +37,40 @@ list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c)
 add_subdirectory(src)
 message(SOLAIRE_SOURCES: ${SOLAIRE_SOURCES})
 message(SOLAIRE_HEADERS: ${SOLAIRE_HEADERS})
+message(KATO_SOURCES: ${KATO_SOURCES})
+message(KATO_HEADERS: ${KATO_HEADERS})
 
-add_executable(Solaire ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLAIRE_SOURCES})
+add_library(Solaire SHARED ${DEPS_HEADERS} ${DEPS_SOURCES} ${SOLAIRE_HEADERS} ${SOLAIRE_SOURCES})
 target_include_directories(Solaire PRIVATE src)
+
+add_executable(Kato ${DEPS_HEADERS} ${DEPS_SOURCES} ${KATO_HEADERS} ${KATO_SOURCES})
+target_include_directories(Kato PRIVATE src)
 
 ################
 ### Add deps ###
 ################
 # TODO(phil): Document here what -ldl and -lm are... I don't remember.
 target_link_libraries(Solaire -ldl -lm)
+target_link_libraries(Kato -ldl -lm)
 
 # SDL2
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
-target_include_directories(Solaire PRIVATE
+target_include_directories(Kato PRIVATE
   ${SDL2_INCLUDE_DIR}
   ${SDL2_IMAGE_INCLUDE_DIR}
   ${SDL2_TTF_INCLUDE_DIR})
-target_link_libraries(Solaire ${SDL2_LIBRARY}
-                             ${SDL2_IMAGE_LIBRARIES}
-                             ${SDL2_TTF_LIBRARIES})
+target_link_libraries(Kato ${SDL2_LIBRARY}
+                           ${SDL2_IMAGE_LIBRARIES}
+                           ${SDL2_TTF_LIBRARIES})
 # glm
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 
 # glad
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glad/include)
+target_include_directories(Kato PRIVATE ${DEPS_PATH}/glad/include)
 
-# install the exe in bin
+# install the lib and exe in bin
 install(TARGETS Solaire DESTINATION bin)
+install(TARGETS Kato DESTINATION bin)

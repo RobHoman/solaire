@@ -28,9 +28,9 @@ void AppUpdateAndRender(AppMemory* memory, AppInput* input) {
     memory->is_initialized = true;
   }
 
-  float red = 0.0;
-  float green = 0.0;
-  float blue = 0.0;
+  float red = 0.2;
+  float green = 0.5;
+  float blue = 0.9;
   if (input->up.pressed) {
     app_state->tone_hz++;
     red = 1.0;

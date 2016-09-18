@@ -45,8 +45,13 @@ struct AppSoundOutput {
   uint32 running_sample_index;
 };
 
+extern "C" {
 void AppUpdateAndRender(AppMemory* memory, AppInput* input);
 void AppGetSoundSamples(AppMemory* memory, AppSoundOutput* app_sound_output);
+}
+typedef void AppUpdateAndRenderFunc(AppMemory* memory, AppInput* input);
+typedef void AppGetSoundSamplesFunc(AppMemory* memory,
+                                    AppSoundOutput* app_sound_output);
 
 }  // namespace app
 }  // namespace kato

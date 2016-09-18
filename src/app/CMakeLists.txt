@@ -9,3 +9,9 @@ set(Solaire_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/app_services.h
   PARENT_SCOPE
   )
+
+set(Kato_HEADERS
+  ${Kato_HEADERS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/app_services.h
+  PARENT_SCOPE
+  )
