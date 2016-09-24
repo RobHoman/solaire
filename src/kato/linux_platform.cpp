@@ -4,14 +4,12 @@
 #include <sys/stat.h>
 #include <x86intrin.h>
 
-#include "kato/platform_services.h"
+#include "kato/linux_platform.h"
 
 #include "SDL.h"
 #include "glad/glad.h"
 
-#include "app/app_services.h"
 #include "common/macros.h"
-#include "common/types.h"
 
 // TODO(phil): Eventually make these non-global
 global_var bool global_running;
@@ -29,7 +27,6 @@ DebugReadFile DebugPlatformReadEntireFile(const char* filename) {
   SDL_RWops* io = SDL_RWFromFile(filename, "rb");
   if (io) {
     int64 file_size = (int64)SDL_RWsize(io);
-    printf("ReadFile. filesize %ld\n", file_size);
     result.memory =
         mmap(0 /* null addr */, file_size, PROT_READ | PROT_WRITE,
              MAP_ANONYMOUS | MAP_PRIVATE, -1 /* null fd */, 0 /* no offset */);
@@ -39,18 +36,15 @@ DebugReadFile DebugPlatformReadEntireFile(const char* filename) {
         result.size = file_size;
       } else {
         // TODO(phil): Log
-        printf("ReadFile failed. Failed to read all bytes.%s\n", filename);
         DebugPlatformFreeFileMemory(file_size, result.memory);
         result.size = 0;
       }
     } else {
       // TODO(phil): Log
-      printf("ReadFile failed. Failed to allocate memory.%s\n", filename);
     }
     SDL_RWclose(io);
   } else {
     // TODO(phil): Log
-    printf("ReadFile failed. Failed to open file.%s\n", filename);
   }
 
   return result;
@@ -79,7 +73,6 @@ bool DebugPlatformCopyEntireFile(const char* src_filename,
   DebugReadFile src_file = DebugPlatformReadEntireFile(src_filename);
   bool success = DebugPlatformWriteEntireFile(dest_filename, src_file.size,
                                               src_file.memory);
-  printf("Copy success: %i\n", success);
   DebugPlatformFreeFileMemory(src_file.size, src_file.memory);
   return success;
 }
@@ -162,6 +155,7 @@ void CatStrings(size_t src_a_count, const char* src_a, size_t src_b_count,
   *dest++ = 0;
 }
 
+// TODO(phil): Use inotify instead of stat for hot-loading dll?
 time_t LinuxGetFileModifyTime(const char* filepath) {
   // TODO(phil): Initializing to zero okay?
   time_t modify_time = 0;
@@ -191,15 +185,16 @@ void LinuxLoadAppLib(LinuxAppLib* app, const char* src_filepath,
   DebugPlatformCopyEntireFile(src_filepath, loaded_filepath);
   // TODO(phil): How to handle loading failure
   app->lib_handle = SDL_LoadObject(loaded_filepath);
-  if (!app->lib_handle) {
-    printf("Failed to load app lib!\n");
-  }
-  app->update_and_render = (kato::app::AppUpdateAndRenderFunc*)SDL_LoadFunction(
-      app->lib_handle, "AppUpdateAndRender");
-  app->get_sound_samples = (kato::app::AppGetSoundSamplesFunc*)SDL_LoadFunction(
-      app->lib_handle, "AppGetSoundSamples");
-  if (!app->update_and_render || !app->get_sound_samples) {
-    printf("Null app function!\n");
+  if (app->lib_handle) {
+    app->update_and_render =
+        (kato::app::AppUpdateAndRenderFunc*)SDL_LoadFunction(
+            app->lib_handle, "AppUpdateAndRender");
+    app->get_sound_samples =
+        (kato::app::AppGetSoundSamplesFunc*)SDL_LoadFunction(
+            app->lib_handle, "AppGetSoundSamples");
+  } else {
+    app->update_and_render = 0;
+    app->get_sound_samples = 0;
   }
 }
 
@@ -318,14 +313,12 @@ int main(int argc, char* argv[]) {
 
           const char* app_lib_filename = "libSolaire.so";
           int app_lib_filename_length = StringLength(app_lib_filename);
-          printf("app lib filename length: %i", app_lib_filename_length);
           int app_lib_full_path_length =
               linux_state.base_path_length + app_lib_filename_length;
           char app_lib_full_path[256];
           CatStrings(linux_state.base_path_length, linux_state.base_path,
                      app_lib_filename_length, app_lib_filename,
                      app_lib_full_path_length, app_lib_full_path);
-          printf("app lib full path: %s\n", app_lib_full_path);
 
           const char* loaded_app_lib_filename = "libSolaire_loaded.so";
           int loaded_app_lib_filename_length =
@@ -338,8 +331,6 @@ int main(int argc, char* argv[]) {
                      loaded_app_lib_full_path_length, loaded_app_lib_full_path);
 
           LinuxAppLib app = {};
-          printf("app lib full path: %s\n", app_lib_full_path);
-          printf("loaded app lib full path: %s\n", loaded_app_lib_full_path);
           LinuxLoadAppLib(&app, app_lib_full_path, loaded_app_lib_full_path);
 
           global_running = true;

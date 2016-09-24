@@ -6,6 +6,6 @@ set(Kato_SOURCES
 
 set(Kato_HEADERS
   ${Kato_HEADERS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/platform_services.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/linux_platform.h
   PARENT_SCOPE
   )

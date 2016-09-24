@@ -1,12 +1,12 @@
 // Copyright 2016 Phil Homan
 
-#ifndef KATO_PLATFORM_SERVICES_H_
-#define KATO_PLATFORM_SERVICES_H_
+#ifndef KATO_LINUX_PLATFORM_H_
+#define KATO_LINUX_PLATFORM_H_
 
 #include <time.h>
 
 #include "common/types.h"
-#include "app/app_services.h"
+#include "app/app.h"
 
 struct LinuxState {
   char* base_path;
@@ -31,4 +31,4 @@ DebugReadFile DebugPlatformReadEntireFile(const char* filename);
 bool DebugPlatformWriteEntireFile(const char* filename, int64 size,
                                   void* memory);
 
-#endif  // KATO_PLATFORM_SERVICES_H_
+#endif  // KATO_LINUX_PLATFORM_H_

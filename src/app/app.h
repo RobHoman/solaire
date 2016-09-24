@@ -1,6 +1,6 @@
 // Copyright 2016 Phil Homan
-#ifndef APP_APP_SERVICES_H_
-#define APP_APP_SERVICES_H_
+#ifndef APP_APP_H_
+#define APP_APP_H_
 
 #include "common/types.h"
 
@@ -56,4 +56,4 @@ typedef void AppGetSoundSamplesFunc(AppMemory* memory,
 }  // namespace app
 }  // namespace kato
 
-#endif  // APP_APP_SERVICES_H_
+#endif  // APP_APP_H_
