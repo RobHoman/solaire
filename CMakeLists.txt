@@ -70,7 +70,3 @@ target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glm)
 # glad
 target_include_directories(Solaire PRIVATE ${DEPS_PATH}/glad/include)
 target_include_directories(Kato PRIVATE ${DEPS_PATH}/glad/include)
-
-# install the lib and exe in bin
-install(TARGETS Solaire DESTINATION bin)
-install(TARGETS Kato DESTINATION bin)

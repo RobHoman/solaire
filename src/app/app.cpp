@@ -12,28 +12,56 @@
 namespace kato {
 namespace app {
 
-GLuint GLInitShaderProgram(const char* vertex_shader_filename,
-                           const char* fragment_shader_filename) {
-  GLuint vertex_shader_handle = glCreateShader(GL_VERTEX_SHADER);
-  DebugReadFile vertex_shader_file =
-      DebugPlatformReadEntireFile(vertex_shader_filename);
-  const char* vertex_shader_text = (char*)vertex_shader_file.memory;
-  glShaderSource(vertex_shader_handle, 1, &vertex_shader_text, nullptr);
-  glCompileShader(vertex_shader_handle);
+GLuint GLCreateVertexShader(const char* filepath) {
+  GLuint shader_handle = glCreateShader(GL_VERTEX_SHADER);
+  DebugReadFile shader_file = DebugPlatformReadEntireFile(filepath);
+  const char* shader_text = (char*)shader_file.memory;
+  glShaderSource(shader_handle, 1, &shader_text, nullptr);
+  glCompileShader(shader_handle);
 
-  GLuint fragment_shader_handle = glCreateShader(GL_FRAGMENT_SHADER);
-  DebugReadFile fragment_shader_file =
-      DebugPlatformReadEntireFile(fragment_shader_filename);
-  const char* fragment_shader_text = (char*)fragment_shader_file.memory;
-  glShaderSource(fragment_shader_handle, 1, &fragment_shader_text, nullptr);
-  glCompileShader(fragment_shader_handle);
+  return shader_handle;
+}
+
+GLuint GLCreateFragmentShader(const char* filepath) {
+  GLuint shader_handle = glCreateShader(GL_FRAGMENT_SHADER);
+  DebugReadFile shader_file = DebugPlatformReadEntireFile(filepath);
+  const char* shader_text = (char*)shader_file.memory;
+  glShaderSource(shader_handle, 1, &shader_text, nullptr);
+  glCompileShader(shader_handle);
+
+  return shader_handle;
+}
+
+void GLPrintShaderCompileError(GLuint shader_handle) {
+  GLint compile_success = 0;
+  glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &compile_success);
+  if (compile_success == GL_FALSE) {
+    GLint max_log_length = 0;
+    glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &max_log_length);
+
+    char log_msg[max_log_length];
+    glGetShaderInfoLog(shader_handle, max_log_length, &max_log_length, &log_msg[0]);
+
+    printf("Shader error: %s\n", log_msg);
+  }
+}
+
+GLuint GLCreateShaderProgram(const char* vertex_shader_filename,
+                           const char* fragment_shader_filename) {
+  GLuint vertex_shader_handle = GLCreateVertexShader(vertex_shader_filename);
+  GLPrintShaderCompileError(vertex_shader_handle);
+
+  GLuint fragment_shader_handle =
+      GLCreateFragmentShader(fragment_shader_filename);
+  GLPrintShaderCompileError(fragment_shader_handle);
 
   GLuint shader_program_handle = glCreateProgram();
   glAttachShader(shader_program_handle, vertex_shader_handle);
   glAttachShader(shader_program_handle, fragment_shader_handle);
 
   glLinkProgram(shader_program_handle);
-  // TODO(phil): Should probably remove the use program here.
+  // TODO(phil): Should probably remove the use program here when this is
+  // tailored for generic use.
   glUseProgram(shader_program_handle);
 
   return shader_program_handle;
@@ -79,7 +107,7 @@ void AppUpdateAndRender(AppMemory* memory, AppInput* input) {
     app_state->tone_volume = 3000;
 
     GLuint shader_program_handle =
-        GLInitShaderProgram("vshaderTest.glsl", "fshaderTest.glsl");
+        GLCreateShaderProgram("vshaderTest.glsl", "fshaderTest.glsl");
     GLInitVertexBuffer(shader_program_handle);
 
     memory->is_initialized = true;
