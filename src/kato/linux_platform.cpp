@@ -7,6 +7,7 @@
 #include "kato/linux_platform.h"
 
 #include "SDL.h"
+#include "SDL/SDL_image.h"
 #include "glad/glad.h"
 
 #include "common/macros.h"
@@ -14,6 +15,19 @@
 // TODO(phil): Eventually make these non-global
 global_var bool global_running;
 global_var uint64 global_perf_count_freq;
+
+DebugImage DebugSDLLoadImage(const char* filename) {
+  SDL_Surface* surface = IMG_Load(filename);
+  DebugImage image = {};
+  image.w = surface->w;
+  image.h = surface->h;
+  image.pixels = surface->pixels;
+  return image;
+}
+
+void DebugSDLFreeImage(DebugImage image) {
+  // TODO(phil): How to free SDL_Surface of image?
+}
 
 void DebugPlatformFreeFileMemory(int64 size, void* memory) {
   if (memory) {

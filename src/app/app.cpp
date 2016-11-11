@@ -40,14 +40,15 @@ void GLPrintShaderCompileError(GLuint shader_handle) {
     glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &max_log_length);
 
     char log_msg[max_log_length];
-    glGetShaderInfoLog(shader_handle, max_log_length, &max_log_length, &log_msg[0]);
+    glGetShaderInfoLog(shader_handle, max_log_length, &max_log_length,
+                       &log_msg[0]);
 
     printf("Shader error: %s\n", log_msg);
   }
 }
 
 GLuint GLCreateShaderProgram(const char* vertex_shader_filename,
-                           const char* fragment_shader_filename) {
+                             const char* fragment_shader_filename) {
   GLuint vertex_shader_handle = GLCreateVertexShader(vertex_shader_filename);
   GLPrintShaderCompileError(vertex_shader_handle);
 
@@ -96,13 +97,6 @@ void AppUpdateAndRender(AppMemory* memory, AppInput* input) {
   AppState* app_state = (AppState*)memory->permanent_storage;
 
   if (!memory->is_initialized) {
-    // TODO(phil): Remove reading and writing a file once these functions are
-    // used elsewhere. Keeping them for now in order to always make sure the
-    // functions are "tested".
-    DebugReadFile appFile = DebugPlatformReadEntireFile("rules.ninja");
-    DebugPlatformWriteEntireFile("test.out", appFile.size, appFile.memory);
-    DebugPlatformFreeFileMemory(appFile.size, appFile.memory);
-
     app_state->tone_hz = 256.f;
     app_state->tone_volume = 3000;
 

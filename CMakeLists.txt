@@ -21,6 +21,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
 message(CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH})
 
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+
 # define path to dependencies stored within the main repo
 set(DEPS_PATH deps)
 
@@ -33,7 +36,7 @@ list(APPEND DEPS_HEADERS ${DEPS_PATH}/glad/include/glad/glad.h)
 # aggregate dependencies sources to add to the executable
 list(APPEND DEPS_SOURCES ${DEPS_PATH}/glad/src/glad.c)
 
-# Aggregate Solaire sources. Sets SOLAIRE_HEADERS and SOLAIRE_SOURCES
+# Aggregate Solaire sources. Sets SOLAIRE_HEADERS and SOLAIRE_SOURCES. Ditto for Kato
 add_subdirectory(src)
 message(SOLAIRE_SOURCES: ${SOLAIRE_SOURCES})
 message(SOLAIRE_HEADERS: ${SOLAIRE_HEADERS})

@@ -29,3 +29,6 @@
 
 # Directories
 build/
+
+# Built Output to bin directory
+bin/Kato

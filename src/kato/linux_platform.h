@@ -5,8 +5,8 @@
 
 #include <time.h>
 
-#include "common/types.h"
 #include "app/app.h"
+#include "common/types.h"
 
 struct LinuxState {
   char* base_path;
@@ -19,6 +19,12 @@ struct LinuxAppLib {
   kato::app::AppGetSoundSamplesFunc* get_sound_samples;
 
   time_t modify_time;
+};
+
+struct DebugImage {
+  int w;
+  int h;
+  void* pixels;
 };
 
 struct DebugReadFile {
